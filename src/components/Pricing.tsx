@@ -89,11 +89,11 @@ export function Pricing() {
                 <div className="text-4xl font-bold mb-2">{plan.price}</div>
               </div>
 
-              <ul className="space-y-4 flex-col align-items-center">
+              <ul className="space-y-4 flex flex-col items-center text-center">
                 {plan.features.map((feature, featureIndex) => (
-                  <li key={featureIndex} className="flex items-center  text-gray-300">
+                  <li key={featureIndex} className="flex items-center w-full max-w-xs text-gray-300">
                     <Check className="w-5 h-5 text-gym-yellow mr-3 flex-shrink-0" />
-                    {feature}
+                    <span className="flex-1">{feature}</span>
                   </li>
                 ))}
               </ul>
