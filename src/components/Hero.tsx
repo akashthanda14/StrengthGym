@@ -43,7 +43,7 @@ export function Hero() {
               </a>
               
               <a
-  href="https://wa.me/9999363465"
+  href="https://wa.me/+919999363465"
   className="inline-flex items-center justify-center bg-white/10 hover:bg-white/20 text-white px-8 py-4 rounded-full font-semibold transition-colors group"
 >
   <img 
