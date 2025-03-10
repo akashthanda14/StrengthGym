@@ -40,7 +40,7 @@ export function Pricing() {
       features: [
         'All 6-month plan features',
         'Priority booking',
-        'Nutrition planning',
+        'Nutrition Planning',
         'Guest passes'
       ]
     }
@@ -64,7 +64,7 @@ export function Pricing() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 justify-items-center">
           {plans.map((plan, index) => (
             <motion.div
               key={index}
@@ -72,7 +72,7 @@ export function Pricing() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
-              className={`relative bg-gym-dark p-8 rounded-2xl border-2 ${
+              className={`relative bg-gym-dark p-8 rounded-2xl border-2 w-full max-w-xs ${
                 plan.popular ? 'border-gym-yellow' : 'border-gray-800'
               }`}
             >
@@ -89,7 +89,8 @@ export function Pricing() {
                 <div className="text-4xl font-bold mb-2">{plan.price}</div>
               </div>
 
-              <ul className="space-y-4">
+              {/* ✅ FIXED CENTERING FOR MOBILE VIEW */}
+              <ul className="space-y-4 flex flex-col sm:items-center sm:justify-center">
                 {plan.features.map((feature, featureIndex) => (
                   <li key={featureIndex} className="flex items-center text-gray-300">
                     <Check className="w-5 h-5 text-gym-yellow mr-3 flex-shrink-0" />

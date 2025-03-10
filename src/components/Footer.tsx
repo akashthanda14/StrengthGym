@@ -20,19 +20,17 @@ export function Footer() {
   ];
 
   return (
-    <footer className="bg-gym-dark-light pt-16 pb-8">
+    <footer className="bg-gym-dark-light pt-16 pb-8 md:text-left text-center">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-8">
           {/* Brand Section */}
           <div className="md:col-span-4">
-            <h3 className="text-2xl font-bold text-gym-yellow mb-4">
-              STRENGTH GYM
-            </h3>
+            <img className='h-18 mx-auto md:mx-0' src="https://res.cloudinary.com/dmt4dj8ft/image/upload/v1741628295/gymlogo_cgqsiv.svg" alt="logo" />
             <p className="text-gray-400 mb-6">
               Your premier fitness destination in Phillaur. Transform your body and mind 
               with expert guidance and state-of-the-art equipment.
             </p>
-            <div className="flex space-x-4">
+            <div className="flex space-x-4 justify-center md:justify-start">
               {socialLinks.map((social, index) => (
                 <motion.a
                   key={index}

@@ -47,9 +47,10 @@ export function Contact() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
+        {/* Centering for Mobile View */}
+        <div className="flex flex-col items-center md:grid md:grid-cols-2 gap-8 lg:gap-12">
           {/* Contact Information */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="flex flex-col items-center w-full max-w-md gap-6">
             {contactInfo.map((info, index) => (
               <motion.a
                 key={index}
@@ -58,27 +59,28 @@ export function Contact() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
-                className="bg-gym-dark-light p-6 rounded-xl hover:bg-gym-dark-light/80 transition-colors"
+                className="bg-gym-dark-light p-6 rounded-xl hover:bg-gym-dark-light/80 transition-colors w-full max-w-xs text-center"
               >
-                <info.icon className="w-8 h-8 text-gym-yellow mb-4" />
+                <info.icon className="w-8 h-8 text-gym-yellow mb-4 mx-auto" />
                 <h3 className="text-lg font-semibold mb-2">{info.title}</h3>
                 <p className="text-gray-400">{info.content}</p>
               </motion.a>
             ))}
           </div>
 
-          {/* Map */}
+          {/* Centering Map */}
           <motion.div
             initial={{ opacity: 0, x: 50 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="w-full h-[400px] rounded-xl overflow-hidden"
+            className="w-full max-w-md flex justify-center"
           >
             <iframe
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d27573.892290407078!2d75.77388!3d31.02506!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x391a5a5747a8c4b1%3A0xea7c44e43cb6c29a!2sPhillaur%2C%20Punjab!5e0!3m2!1sen!2sin!4v1709348799675!5m2!1sen!2sin"
               width="100%"
-              height="100%"
+              height="400px"
+              className="rounded-xl"
               style={{ border: 0 }}
               allowFullScreen
               loading="lazy"

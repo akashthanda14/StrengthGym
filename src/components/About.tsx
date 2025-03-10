@@ -12,14 +12,14 @@ export function About() {
   return (
     <section id="about" className="py-20 bg-gym-dark-light">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div className="flex flex-col items-center lg:grid lg:grid-cols-2 gap-12">
           {/* Image */}
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="relative"
+            className="relative w-full max-w-md mx-auto"
           >
             <img
               src="https://images.unsplash.com/photo-1605296867424-35fc25c9212a?auto=format&fit=crop&q=80"
@@ -35,20 +35,20 @@ export function About() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="space-y-6"
+            className="flex flex-col items-center text-center lg:items-start lg:text-left space-y-6 w-full"
           >
             <h2 className="text-3xl sm:text-4xl font-bold">
               About <span className="text-gym-yellow">Strength Gym</span>
             </h2>
             
-            <p className="text-gray-300">
+            <p className="text-gray-300 max-w-lg">
               Led by expert trainer Saurav Makkar with over 12 years of experience, 
               Strength Gym is Phillaur's premier fitness destination. Our facility 
               features top-of-the-line Viva Fitness equipment and provides personalized 
               training programs for all fitness levels.
             </p>
 
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-md">
               {stats.map((stat, index) => (
                 <motion.div
                   key={index}
@@ -56,7 +56,7 @@ export function About() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.6, delay: index * 0.1 }}
-                  className="bg-gym-dark p-6 rounded-xl"
+                  className="bg-gym-dark p-6 rounded-xl flex flex-col items-center w-full max-w-xs mx-auto"
                 >
                   <stat.icon className="w-8 h-8 text-gym-yellow mb-3" />
                   <div className="text-2xl font-bold">{stat.value}</div>

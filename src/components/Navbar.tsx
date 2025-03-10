@@ -48,7 +48,7 @@ export function Navbar() {
           <div className="flex justify-between items-center">
             {/* Logo */}
             <a href="#home" className="text-2xl font-bold text-gym-yellow">
-              <img className='h-18' src="https://res.cloudinary.com/dmt4dj8ft/image/upload/v1741628295/gymlogo_cgqsiv.svg" alt="logo" />
+              <img style={{height:90}} src="https://res.cloudinary.com/dmt4dj8ft/image/upload/v1741628295/gymlogo_cgqsiv.svg" alt="logo" />
             </a>
 
             {/* Desktop Navigation */}
@@ -57,7 +57,7 @@ export function Navbar() {
                 <a
                   key={link.name}
                   href={link.href}
-                  className="text-white hover:text-gym-yellow transition-colors"
+                  className="text-white  hover:text-gym-yellow transition-colors"
                 >
                   {link.name}
                 </a>
@@ -96,7 +96,7 @@ export function Navbar() {
                       key={link.name}
                       href={link.href}
                       onClick={() => setIsOpen(false)}
-                      className="text-white hover:text-gym-yellow transition-colors"
+                      className="text-white text-center hover:text-gym-yellow transition-colors"
                     >
                       {link.name}
                     </a>

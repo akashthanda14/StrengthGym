@@ -48,22 +48,24 @@ export function Facilities() {
   return (
     <section id="facilities" className="py-20 bg-gym-dark">
       <div className="container mx-auto px-4">
+        {/* Heading */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          className="text-center mb-16 max-w-3xl mx-auto"
         >
           <h2 className="text-3xl sm:text-4xl font-bold mb-6">
             Our <span className="text-gym-yellow">Facilities</span>
           </h2>
-          <p className="text-gray-300 max-w-2xl mx-auto">
+          <p className="text-gray-300">
             Experience premium fitness with our state-of-the-art facilities and equipment
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Facilities Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 justify-items-center">
           {facilities.map((facility, index) => (
             <motion.div
               key={index}
@@ -71,9 +73,9 @@ export function Facilities() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="bg-gym-dark-light p-6 rounded-xl hover:bg-gym-dark-light/80 transition-colors"
+              className="bg-gym-dark-light p-6 rounded-xl hover:bg-gym-dark-light/80 transition-colors text-center md:text-left w-full max-w-xs"
             >
-              <facility.icon className="w-10 h-10 text-gym-yellow mb-4" />
+              <facility.icon className="w-10 h-10 text-gym-yellow mb-4 mx-auto md:mx-0" />
               <h3 className="text-xl font-semibold mb-2">{facility.title}</h3>
               <p className="text-gray-400">{facility.description}</p>
             </motion.div>
