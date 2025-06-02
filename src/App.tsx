@@ -6,6 +6,7 @@ import { Pricing } from './components/Pricing';
 import { Contact } from './components/Contact';
 import { Footer } from './components/Footer';
 import AppleCarousel from './components/AppleCarousel';
+import ClientSlideShow from './components/ClientSlideShow';
 import SocialFeeds from './components/SocialFeeds';
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
       <Navbar />
       <main>
         <Hero />
+        <ClientSlideShow />
         <About />
          <AppleCarousel/>
         <Facilities />
