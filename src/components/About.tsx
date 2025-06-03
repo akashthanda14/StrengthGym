@@ -1,7 +1,19 @@
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Award, Clock, Users, Dumbbell } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 export function About() {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  
+  const images = [
+    'https://res.cloudinary.com/dmt4dj8ft/image/upload/v1748935617/gym-3_q6wbyt.jpg',
+    'https://res.cloudinary.com/dmt4dj8ft/image/upload/v1748935617/gym-2_fpzznw.jpg',
+    'https://res.cloudinary.com/dmt4dj8ft/image/upload/v1748935617/gym-1_trcmpa.jpg',
+    'https://res.cloudinary.com/dmt4dj8ft/image/upload/v1748936017/gym-6_swva0l.jpg',
+    'https://res.cloudinary.com/dmt4dj8ft/image/upload/v1748936016/gym-4_wuyuq8.jpg',
+    'https://res.cloudinary.com/dmt4dj8ft/image/upload/v1748936016/gym-5_xfgwom.jpg'
+  ];
+
   const stats = [
     { icon: Award, label: 'Experience', value: '12+ Years' },
     { icon: Users, label: 'Happy Clients', value: '1000+' },
@@ -9,24 +21,41 @@ export function About() {
     { icon: Dumbbell, label: 'Equipment', value: 'Viva Fitness' },
   ];
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => 
+        prevIndex === images.length - 1 ? 0 : prevIndex + 1
+      );
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <section id="about" className="py-20 bg-gym-dark-light">
       <div className="container mx-auto px-4">
         <div className="flex flex-col items-center lg:grid lg:grid-cols-2 gap-12">
-          {/* Image */}
+          {/* Image Slideshow */}
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="relative w-full max-w-md mx-auto"
+            className="relative w-full max-w-md mx-auto h-[500px] overflow-hidden rounded-2xl"
           >
-            <img
-              src="https://images.unsplash.com/photo-1605296867424-35fc25c9212a?auto=format&fit=crop&q=80"
-              alt="Saurav Makkar - Fitness Trainer"
-              className="rounded-2xl w-full"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-gym-dark-light via-transparent to-transparent rounded-2xl" />
+            <AnimatePresence mode="wait">
+              <motion.img
+                key={currentImageIndex}
+                src={images[currentImageIndex]}
+                alt={`Gym Image ${currentImageIndex + 1}`}
+                className="absolute inset-0 w-full h-full object-cover"
+                initial={{ opacity: 0, scale: 1.1 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.5 }}
+              />
+            </AnimatePresence>
+            <div className="absolute inset-0 bg-gradient-to-t from-gym-dark-light via-transparent to-transparent" />
           </motion.div>
 
           {/* Content */}

@@ -7,7 +7,7 @@ export function Hero() {
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 z-0">
         <img
-          src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80"
+          src="https://res.cloudinary.com/dmt4dj8ft/image/upload/v1748933983/ChatGPT_Image_Jun_3_2025_12_29_17_PM_e9e8ue.png"
           alt="Gym Interior"
           className="w-full h-full object-cover"
         />
