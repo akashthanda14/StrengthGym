@@ -4,7 +4,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        'gym-yellow': '#8b0000',
+        'gym-red': '#8b0000',
         'gym-dark': '#15171b',
         'gym-dark-light': '#2A2D33.'
       },
