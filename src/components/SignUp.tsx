@@ -1,6 +1,6 @@
-// src/components/SignUp.tsx
+import { Link } from 'react-router-dom';
 import React, { useState } from 'react';
-import { registerUser, RegisterPayload } from '../api/api';
+import { registerUser, RegisterPayload } from '../api/api.ts';
 
 interface Props {}
 
@@ -22,12 +22,11 @@ const SignUp: React.FC<Props> = () => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    
+
     try {
       const res = await registerUser(form);
       localStorage.setItem('token', res.token);
-      localStorage.setItem('role', res.role);
-      window.location.href = res.role === 'admin' ? '/admin/dashboard' : '/client/dashboard';
+      window.location.href = '/client/dashboard'; // ✅ Always redirect client
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -36,16 +35,17 @@ const SignUp: React.FC<Props> = () => {
   };
 
   return (
-    <div 
+    <div
       className="min-h-screen flex items-center justify-center p-4"
       style={{
-        backgroundImage: "url('https://images.unsplash.com/photo-1571902943202-507ec2618e8f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1600&q=80')",
+        backgroundImage:
+          "url('https://images.unsplash.com/photo-1571902943202-507ec2618e8f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1600&q=80')",
         backgroundSize: 'cover',
         backgroundPosition: 'center',
       }}
     >
       <div className="absolute inset-0 bg-[#15171b] opacity-90"></div>
-      
+
       <div className="w-full max-w-md z-10">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">JOIN STRENGTH GYM PHILLAUR</h1>
@@ -110,7 +110,7 @@ const SignUp: React.FC<Props> = () => {
               </label>
               <div className="relative">
                 <input
-                  type={passwordVisible ? "text" : "password"}
+                  type={passwordVisible ? 'text' : 'password'}
                   id="password"
                   name="password"
                   placeholder="••••••••"
@@ -209,9 +209,9 @@ const SignUp: React.FC<Props> = () => {
 
           <div className="mt-6 text-center text-sm text-[#a0a0a0]">
             Already a member?{' '}
-            <a href="/signin" className="font-medium text-[#8b0000] hover:text-[#ff6b6b]">
+            <Link to="/signin" className="font-medium text-[#8b0000] hover:text-[#ff6b6b]">
               Sign in
-            </a>
+            </Link>
           </div>
         </div>
       </div>

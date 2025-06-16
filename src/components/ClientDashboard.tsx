@@ -30,11 +30,15 @@ const ClientDashboard: React.FC = () => {
 
       const data = await res.json();
 
-      if (!res.ok) throw new Error(data.message || 'Failed to fetch plan');
-
-      setPlan(data);
+      if (res.status === 404 || data?.plan === null || Object.keys(data).length === 0) {
+        setPlan(null); // no plan assigned
+      } else if (!res.ok) {
+        throw new Error(data.message || 'Failed to fetch plan');
+      } else {
+        setPlan(data);
+      }
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Something went wrong');
     } finally {
       setLoading(false);
     }
@@ -43,16 +47,11 @@ const ClientDashboard: React.FC = () => {
   const calculateExpiryDate = (startDate: string, planName: string): Date => {
     const start = new Date(startDate);
     switch (planName) {
-      case 'Monthly':
-        return new Date(start.setMonth(start.getMonth() + 1));
-      case 'Quarterly':
-        return new Date(start.setMonth(start.getMonth() + 3));
-      case 'Half-Yearly':
-        return new Date(start.setMonth(start.getMonth() + 6));
-      case 'Yearly':
-        return new Date(start.setMonth(start.getMonth() + 12));
-      default:
-        return start;
+      case 'Monthly': return new Date(start.setMonth(start.getMonth() + 1));
+      case 'Quarterly': return new Date(start.setMonth(start.getMonth() + 3));
+      case 'Half-Yearly': return new Date(start.setMonth(start.getMonth() + 6));
+      case 'Yearly': return new Date(start.setMonth(start.getMonth() + 12));
+      default: return start;
     }
   };
 
@@ -91,6 +90,7 @@ const ClientDashboard: React.FC = () => {
     </div>
   );
 
+  // No plan assigned
   if (!plan) return (
     <div className="min-h-screen bg-[#15171b] flex items-center justify-center">
       <div className="bg-[#2A2D33] p-6 rounded-xl max-w-md text-center">
@@ -115,8 +115,8 @@ const ClientDashboard: React.FC = () => {
     <div className="min-h-screen bg-[#15171b] text-white p-4 md:p-8">
       <div className="max-w-4xl mx-auto space-y-6">
         <h1 className="text-2xl md:text-3xl font-bold mb-2">Welcome Back, {plan.name}</h1>
-        
-        {/* Plan Status Card */}
+
+        {/* Plan Status */}
         <div className="bg-[#2A2D33] rounded-xl p-6 shadow-lg">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
             <div>
@@ -127,7 +127,7 @@ const ClientDashboard: React.FC = () => {
                 Started on {new Date(plan.startDate).toLocaleDateString()}
               </p>
             </div>
-            
+
             <div className="bg-[#8b0000]/20 px-4 py-2 rounded-full">
               <span className="font-medium">
                 {daysLeft} {daysLeft === 1 ? 'day' : 'days'} remaining
@@ -142,13 +142,11 @@ const ClientDashboard: React.FC = () => {
               <span>{progress}%</span>
             </div>
             <div className="w-full bg-[#3a3e46] rounded-full h-2.5">
-              <div 
-                className="bg-[#8b0000] h-2.5 rounded-full" 
-                style={{ width: `${progress}%` }}
-              ></div>
+              <div className="bg-[#8b0000] h-2.5 rounded-full" style={{ width: `${progress}%` }}></div>
             </div>
           </div>
 
+          {/* Metrics */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
             <div className="bg-[#3a3e46]/50 p-3 rounded-lg">
               <p className="text-gray-400 text-sm">Expiry Date</p>
@@ -171,47 +169,35 @@ const ClientDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Profile Information */}
+        {/* Profile Info */}
         <div className="bg-[#2A2D33] rounded-xl p-6 shadow-lg">
           <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
             <User className="text-[#8b0000]" /> Profile Information
           </h2>
-          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex items-center gap-3">
-              <div className="bg-[#3a3e46]/50 p-2 rounded-full">
-                <Mail className="h-5 w-5 text-[#8b0000]" />
-              </div>
+              <div className="bg-[#3a3e46]/50 p-2 rounded-full"><Mail className="h-5 w-5 text-[#8b0000]" /></div>
               <div>
                 <p className="text-gray-400 text-sm">Email</p>
                 <p className="font-medium">{plan.email}</p>
               </div>
             </div>
-            
             <div className="flex items-center gap-3">
-              <div className="bg-[#3a3e46]/50 p-2 rounded-full">
-                <Phone className="h-5 w-5 text-[#8b0000]" />
-              </div>
+              <div className="bg-[#3a3e46]/50 p-2 rounded-full"><Phone className="h-5 w-5 text-[#8b0000]" /></div>
               <div>
                 <p className="text-gray-400 text-sm">Phone</p>
                 <p className="font-medium">{plan.phoneNumber}</p>
               </div>
             </div>
-            
             <div className="flex items-center gap-3">
-              <div className="bg-[#3a3e46]/50 p-2 rounded-full">
-                <Calendar className="h-5 w-5 text-[#8b0000]" />
-              </div>
+              <div className="bg-[#3a3e46]/50 p-2 rounded-full"><Calendar className="h-5 w-5 text-[#8b0000]" /></div>
               <div>
                 <p className="text-gray-400 text-sm">Member Since</p>
                 <p className="font-medium">{new Date(plan.startDate).toLocaleDateString()}</p>
               </div>
             </div>
-            
             <div className="flex items-center gap-3">
-              <div className="bg-[#3a3e46]/50 p-2 rounded-full">
-                <Clock className="h-5 w-5 text-[#8b0000]" />
-              </div>
+              <div className="bg-[#3a3e46]/50 p-2 rounded-full"><Clock className="h-5 w-5 text-[#8b0000]" /></div>
               <div>
                 <p className="text-gray-400 text-sm">Membership Status</p>
                 <p className="font-medium">
@@ -222,7 +208,7 @@ const ClientDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Quick Actions */}
+        {/* Actions */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <button className="bg-[#8b0000] hover:bg-[#a52a2a] text-white py-3 px-4 rounded-lg transition-colors">
             Book Session
