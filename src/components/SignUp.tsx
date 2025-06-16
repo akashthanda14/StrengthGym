@@ -24,33 +24,17 @@ const handleSubmit = async (e: React.FormEvent) => {
 
   try {
     const res = await registerUser(form);
-    localStorage.setItem('token', res.token);
     
-    // Optional: Check if plan exists immediately after registration
-    try {
-      const planRes = await fetch('https://strengthgymbackend.onrender.com/api/plan/myplan', {
-        headers: {
-          Authorization: `Bearer ${res.token}`,
-        },
-      });
-      
-      if (planRes.ok) {
-        const planData = await planRes.json();
-        if (planData.plan) {
-          // User already has a plan (unlikely for new registration)
-          window.location.href = '/client/dashboard';
-        } else {
-          // No plan exists - redirect to plans page
-          window.location.href = '/plans';
-        }
-      } else {
-        // Proceed to dashboard anyway
-        window.location.href = '/client/dashboard';
-      }
-    } catch {
-      // Fallback to dashboard if plan check fails
-      window.location.href = '/client/dashboard';
-    }
+    // Store token and user data from the response
+    localStorage.setItem('token', res.token);
+    localStorage.setItem('userId', res.user.id);
+    localStorage.setItem('userName', res.user.name);
+    localStorage.setItem('userEmail', res.user.email);
+    localStorage.setItem('userRole', res.user.role);
+    
+    // Redirect directly to dashboard - no plan checking needed
+    window.location.href = '/client/dashboard';
+    
   } catch (err) {
     setError((err as Error).message);
   } finally {

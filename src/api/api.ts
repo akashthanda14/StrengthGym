@@ -11,6 +11,7 @@ export interface RegisterPayload {
 }
 
 export interface AuthResponse {
+  user: any;
   token: string;
   role: 'admin' | 'client';
   name: string;
