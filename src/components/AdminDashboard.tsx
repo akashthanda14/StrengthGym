@@ -42,7 +42,7 @@ const AdminDashboard: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch('https://strengthgymbackend.onrender.com/plan/all', {
+      const res = await fetch('https://strengthgymbackend.onrender.com/api/plan/all', {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
@@ -101,7 +101,7 @@ const AdminDashboard: React.FC = () => {
     try {
       const expiryDate = calculateExpiryDate(newPlan.startDate, newPlan.planName);
       
-      const res = await fetch('https://strengthgymbackend.onrender.com/plan/assign', {
+      const res = await fetch('https://strengthgymbackend.onrender.com/api/plan/assign', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

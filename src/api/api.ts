@@ -22,8 +22,8 @@ export const loginUser = async (
   isAdmin: boolean
 ): Promise<AuthResponse> => {
   const endpoint = isAdmin
-    ? 'https://strengthgymbackend.onrender.com/auth/login'
-    : 'https://strengthgymbackend.onrender.com/auth/login';
+    ? 'https://strengthgymbackend.onrender.com/api/auth/login'
+    : 'https://strengthgymbackend.onrender.com/api/auth/login';
 
   const res = await fetch(endpoint, {
     method: 'POST',
@@ -39,7 +39,7 @@ export const loginUser = async (
 export const registerUser = async (
   data: RegisterPayload
 ): Promise<AuthResponse> => {
-  const res = await fetch('https://strengthgymbackend.onrender.com/auth/register', {
+  const res = await fetch('https://strengthgymbackend.onrender.com/api/auth/register', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),

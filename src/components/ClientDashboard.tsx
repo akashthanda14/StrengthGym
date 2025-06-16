@@ -22,7 +22,7 @@ const ClientDashboard: React.FC = () => {
 
   const fetchClientPlan = async () => {
     try {
-      const res = await fetch('https://strengthgymbackend.onrender.com/plan/myplan', {
+      const res = await fetch('https://strengthgymbackend.onrender.com/api/plan/myplan', {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
