@@ -1,4 +1,5 @@
 // src/components/SignIn.tsx
+import { Link } from 'react-router-dom';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -216,9 +217,10 @@ const SignIn: React.FC = () => {
 
           <div className="mt-6 text-center text-sm text-[#a0a0a0]">
             Not a member yet?{' '}
-            <a href="/signup" className="font-medium text-[#8b0000] hover:text-[#ff6b6b]">
-              Join now
-            </a>
+           <Link to="/signup" className="font-medium text-[#8b0000] hover:text-[#ff6b6b]">
+  Join now
+</Link>
+
           </div>
         </div>
       </div>

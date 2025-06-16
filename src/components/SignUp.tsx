@@ -27,7 +27,7 @@ const SignUp: React.FC<Props> = () => {
       const res = await registerUser(form);
       localStorage.setItem('token', res.token);
       localStorage.setItem('role', res.role);
-      window.location.href = res.role === 'admin' ? '/admin-dashboard' : '/client-dashboard';
+      window.location.href = res.role === 'admin' ? '/admin/dashboard' : '/client/dashboard';
     } catch (err) {
       setError((err as Error).message);
     } finally {
