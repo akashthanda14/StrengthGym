@@ -20,29 +20,38 @@ const ClientDashboard: React.FC = () => {
     fetchClientPlan();
   }, []);
 
-  const fetchClientPlan = async () => {
-    try {
-      const res = await fetch('https://strengthgymbackend.onrender.com/api/plan/myplan', {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
+ const fetchClientPlan = async () => {
+  try {
+    const res = await fetch('https://strengthgymbackend.onrender.com/api/plan/myplan', {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
 
-      const data = await res.json();
-
-      if (res.status === 404 || data?.plan === null || Object.keys(data).length === 0) {
-        setPlan(null); // no plan assigned
-      } else if (!res.ok) {
-        throw new Error(data.message || 'Failed to fetch plan');
-      } else {
-        setPlan(data);
-      }
-    } catch (err: any) {
-      setError(err.message || 'Something went wrong');
-    } finally {
-      setLoading(false);
+    if (res.status === 404) {
+      // Expected case - no plan exists
+      setPlan(null);
+      return;
     }
-  };
+
+    if (!res.ok) {
+      throw new Error('Failed to fetch plan');
+    }
+
+    const data = await res.json();
+    setPlan(data);
+  } catch (err: any) {
+    // Only show error if it's not a 404
+    if (err.message !== 'Failed to fetch plan' && !err.message.includes('404')) {
+      setError(err.message || 'Something went wrong');
+    } else {
+      // 404 means no plan exists, which is normal for new users
+      setPlan(null);
+    }
+  } finally {
+    setLoading(false);
+  }
+};
 
   const calculateExpiryDate = (startDate: string, planName: string): Date => {
     const start = new Date(startDate);

@@ -17,22 +17,46 @@ const SignUp: React.FC<Props> = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setLoading(true);
+  setError(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-
+  try {
+    const res = await registerUser(form);
+    localStorage.setItem('token', res.token);
+    
+    // Optional: Check if plan exists immediately after registration
     try {
-      const res = await registerUser(form);
-      localStorage.setItem('token', res.token);
-      window.location.href = '/client/dashboard'; // ✅ Always redirect client
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setLoading(false);
+      const planRes = await fetch('https://strengthgymbackend.onrender.com/api/plan/myplan', {
+        headers: {
+          Authorization: `Bearer ${res.token}`,
+        },
+      });
+      
+      if (planRes.ok) {
+        const planData = await planRes.json();
+        if (planData.plan) {
+          // User already has a plan (unlikely for new registration)
+          window.location.href = '/client/dashboard';
+        } else {
+          // No plan exists - redirect to plans page
+          window.location.href = '/plans';
+        }
+      } else {
+        // Proceed to dashboard anyway
+        window.location.href = '/client/dashboard';
+      }
+    } catch {
+      // Fallback to dashboard if plan check fails
+      window.location.href = '/client/dashboard';
     }
-  };
+  } catch (err) {
+    setError((err as Error).message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div
