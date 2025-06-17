@@ -1,4 +1,4 @@
-// src/App.tsx
+import { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
@@ -35,6 +35,14 @@ function Home() {
 }
 
 function App() {
+  useEffect(() => {
+    // 🔁 Ping the backend on initial load to wake it up
+    fetch('https://strengthgymbackend.onrender.com/api/wakeup')
+      .then((res) => res.json())
+      .then((data) => console.log(data.message))
+      .catch((err) => console.error('Wakeup ping failed:', err));
+  }, []);
+
   return (
     <Router>
       <div className="min-h-screen bg-gym-dark text-white">
@@ -44,7 +52,6 @@ function App() {
           <Route path="/signup" element={<SignUp />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/client/dashboard" element={<ClientDashboard />} />
-          {/* Add a fallback 404 route */}
           <Route path="*" element={<div className="p-8">404 - Page Not Found</div>} />
         </Routes>
       </div>
