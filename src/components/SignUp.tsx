@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import React, { useState } from 'react';
 import { registerUser, RegisterPayload } from '../api/api.ts';
 
@@ -13,6 +13,7 @@ const SignUp: React.FC<Props> = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -33,7 +34,7 @@ const handleSubmit = async (e: React.FormEvent) => {
     localStorage.setItem('userRole', res.user.role);
     
     // Redirect directly to dashboard - no plan checking needed
-    window.location.href = '/client/dashboard';
+    navigate('/client/dashboard');
     
   } catch (err) {
     setError((err as Error).message);

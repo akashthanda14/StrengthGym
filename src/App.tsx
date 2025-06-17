@@ -37,7 +37,7 @@ function Home() {
 function App() {
   useEffect(() => {
     // 🔁 Ping the backend on initial load to wake it up
-    fetch('https://strengthgymbackend.onrender.com/api/wakeup')
+    fetch('https://strengthgymbackend.onrender.com/api/test')
       .then((res) => res.json())
       .then((data) => console.log(data.message))
       .catch((err) => console.error('Wakeup ping failed:', err));
