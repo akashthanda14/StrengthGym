@@ -1,8 +1,35 @@
 import { motion } from 'framer-motion';
 import { Phone, ArrowRight, Dumbbell } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 
 export function Hero() {
+  const [serverStatus, setServerStatus] = useState('waking'); // 'waking', 'awake', 'error'
+
+  // Function to ping the server
+  useEffect(() => {
+    const wakeUpServer = async () => {
+      try {
+        const response = await fetch('https://strengthgymbackend.onrender.com/test');
+        const data = await response.json();
+        console.log('Server response:', data);
+        setServerStatus('awake');
+      } catch (error) {
+        console.log('Server ping failed:', error);
+        setServerStatus('error');
+        
+        // Retry after 5 seconds if failed
+        setTimeout(wakeUpServer, 5000);
+      }
+    };
+
+    wakeUpServer();
+
+    // Optional: Keep pinging every 15 minutes to prevent idle
+    const interval = setInterval(wakeUpServer, 15 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <section id="home" className="relative min-h-screen flex justify-center md:justify-start items-center pt-28 lg:pt-0">
       {/* Background Image with Overlay */}
@@ -27,6 +54,18 @@ export function Hero() {
             transition={{ duration: 0.6 }}
             className="space-y-5"
           >
+            {/* Server Status Indicator (for debugging)
+            {process.env.NODE_ENV === 'development' && (
+              <div className={`text-xs p-1 rounded-md ${
+                serverStatus === 'awake' ? 'bg-green-500/20 text-green-400' :
+                serverStatus === 'error' ? 'bg-red-500/20 text-red-400' :
+                'bg-yellow-500/20 text-yellow-400'
+              }`}>
+                Server: {serverStatus === 'waking' ? 'Waking up...' : 
+                       serverStatus === 'awake' ? 'Ready' : 'Connection issue (retrying)'}
+              </div>
+            )} */}
+
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-snug tracking-tight">
               Transform Your Body at <br className="hidden sm:block" />
               <span className="text-[#8b0000] font-extrabold">Strength Gym</span>
