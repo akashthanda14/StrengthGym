@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { Loader2, User, Mail, Calendar, Award, AlertCircle, PlusCircle, Search, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
+import { Footer } from './Footer';
 
 const planOptions = [
   { label: 'Monthly', value: 'Monthly' },
@@ -37,11 +38,7 @@ const AdminDashboard: React.FC = () => {
   const [sortConfig, setSortConfig] = useState<{key: keyof Client; direction: 'ascending' | 'descending'} | null>(null);
   const [activeTab, setActiveTab] = useState<'all' | 'active' | 'expired'>('all');
 
-  useEffect(() => {
-    fetchClients();
-  }, []);
-
-  const fetchClients = async () => {
+  const fetchClients = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -67,9 +64,13 @@ const AdminDashboard: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const calculateExpiryDate = (startDate: string, planName: PlanOption): string => {
+  useEffect(() => {
+    fetchClients();
+  }, [fetchClients]);
+
+  const calculateExpiryDate = useCallback((startDate: string, planName: PlanOption): string => {
     try {
       const start = new Date(startDate);
       if (isNaN(start.getTime())) throw new Error('Invalid start date');
@@ -96,9 +97,9 @@ const AdminDashboard: React.FC = () => {
       console.error('Error calculating expiry date:', err);
       return new Date().toISOString().split('T')[0];
     }
-  };
+  }, []);
 
-  const updatePlan = async () => {
+  const updatePlan = useCallback(async () => {
     if (!selectedClient) return;
     
     try {
@@ -133,44 +134,60 @@ const AdminDashboard: React.FC = () => {
       alert(err.message || 'Failed to update plan');
       console.error('Error updating plan:', err);
     }
-  };
+  }, [selectedClient, newPlan, calculateExpiryDate, fetchClients]);
 
-  const openPlanModal = (client: Client) => {
+  const openPlanModal = useCallback((client: Client) => {
     setSelectedClient(client);
     setNewPlan({
       planName: client.planName || 'Monthly',
       startDate: client.startDate || new Date().toISOString().split('T')[0]
     });
     setShowModal(true);
-  };
+  }, []);
 
-  const formatDate = (dateString: string | null) => {
+  const formatDate = useCallback((dateString: string | null): string => {
     if (!dateString) return 'N/A';
     try {
       return new Date(dateString).toLocaleDateString();
     } catch {
       return 'Invalid Date';
     }
-  };
+  }, []);
 
-  const handleSort = (key: keyof Client) => {
+  const handleSort = useCallback((key: keyof Client) => {
     let direction: 'ascending' | 'descending' = 'ascending';
     if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
       direction = 'descending';
     }
     setSortConfig({ key, direction });
-  };
+  }, [sortConfig]);
 
-  const sortedClients = React.useMemo(() => {
+  const getSortIcon = useCallback((key: keyof Client) => {
+    if (!sortConfig || sortConfig.key !== key) return null;
+    return sortConfig.direction === 'ascending' ? 
+      <ChevronUp className="ml-1 h-4 w-4 inline" /> : 
+      <ChevronDown className="ml-1 h-4 w-4 inline" />;
+  }, [sortConfig]);
+
+  const sortedClients = useMemo(() => {
     let sortableClients = [...clients];
     if (sortConfig !== null) {
       sortableClients.sort((a, b) => {
         const aValue = a[sortConfig.key];
         const bValue = b[sortConfig.key];
 
+        // Handle null/undefined values
         if (aValue === null || aValue === undefined) return 1;
         if (bValue === null || bValue === undefined) return -1;
 
+        // Special handling for date fields
+        if (sortConfig.key === 'startDate' || sortConfig.key === 'expiryDate') {
+          const dateA = new Date(aValue as string).getTime();
+          const dateB = new Date(bValue as string).getTime();
+          return sortConfig.direction === 'ascending' ? dateA - dateB : dateB - dateA;
+        }
+
+        // Default comparison
         if (aValue < bValue) {
           return sortConfig.direction === 'ascending' ? -1 : 1;
         }
@@ -183,37 +200,33 @@ const AdminDashboard: React.FC = () => {
     return sortableClients;
   }, [clients, sortConfig]);
 
-  const filteredClients = React.useMemo(() => {
+  const filteredClients = useMemo(() => {
     let result = sortedClients.filter(client =>
       client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      client.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (client.phoneNumber && client.phoneNumber.toLowerCase().includes(searchTerm.toLowerCase()))
+      client.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Normalize to start of day
 
     if (activeTab === 'active') {
       result = result.filter(client => {
         if (!client.expiryDate) return false;
         const expiry = new Date(client.expiryDate);
-        return expiry >= new Date();
+        return expiry >= today;
       });
     } else if (activeTab === 'expired') {
       result = result.filter(client => {
         if (!client.expiryDate) return false;
         const expiry = new Date(client.expiryDate);
-        return expiry < new Date();
+        return expiry < today;
       });
     }
 
     return result;
   }, [sortedClients, searchTerm, activeTab]);
 
-  const getSortIcon = (key: keyof Client) => {
-    if (!sortConfig || sortConfig.key !== key) return null;
-    return sortConfig.direction === 'ascending' ? 
-      <ChevronUp className="ml-1 h-4 w-4 inline" /> : 
-      <ChevronDown className="ml-1 h-4 w-4 inline" />;
-  };
-
+  // Render loading state
   if (loading) return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center">
       <div className="flex flex-col items-center">
@@ -223,6 +236,7 @@ const AdminDashboard: React.FC = () => {
     </div>
   );
 
+  // Render error state
   if (error) return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center">
       <div className="bg-gray-800 p-8 rounded-xl max-w-md text-center shadow-xl">
@@ -240,53 +254,53 @@ const AdminDashboard: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 text-white p-4 md:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 text-white p-3 md:p-6">
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-3">
+        <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
+          <div className="w-full">
+            <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2 mb-1">
               <Award className="text-red-600" /> 
               <span className="bg-gradient-to-r from-red-600 to-red-400 bg-clip-text text-transparent">
                 Member Management
               </span>
             </h1>
-            <p className="text-gray-400 mt-1">Manage all member subscriptions and plans</p>
+            <p className="text-gray-400">Manage all member subscriptions and plans</p>
           </div>
           
-          <div className="flex items-center gap-4">
-            <div className="relative">
+          <div className="w-full flex flex-col sm:flex-row items-end gap-3">
+            <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search members..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="bg-gray-700 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 w-full md:w-64"
+                className="bg-gray-700 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 w-full"
               />
             </div>
-            <div className="text-gray-400 bg-gray-700 px-3 py-2 rounded-lg">
+            <div className="text-gray-400 bg-gray-700 px-3 py-2 rounded-lg min-w-[120px] text-center">
               {filteredClients.length} {filteredClients.length === 1 ? 'Member' : 'Members'}
             </div>
           </div>
         </div>
 
-        <div className="mb-6">
-          <div className="flex space-x-1 bg-gray-700 p-1 rounded-lg">
+        <div className="mb-6 overflow-x-auto">
+          <div className="flex space-x-1 bg-gray-700 p-1 rounded-lg w-max min-w-full">
             <button
               onClick={() => setActiveTab('all')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'all' ? 'bg-red-600 text-white' : 'text-gray-300 hover:bg-gray-600'}`}
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'all' ? 'bg-red-600 text-white' : 'text-gray-300 hover:bg-gray-600'}`}
             >
               All Members
             </button>
             <button
               onClick={() => setActiveTab('active')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'active' ? 'bg-green-600 text-white' : 'text-gray-300 hover:bg-gray-600'}`}
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'active' ? 'bg-green-600 text-white' : 'text-gray-300 hover:bg-gray-600'}`}
             >
               Active
             </button>
             <button
               onClick={() => setActiveTab('expired')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'expired' ? 'bg-yellow-600 text-white' : 'text-gray-300 hover:bg-gray-600'}`}
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'expired' ? 'bg-yellow-600 text-white' : 'text-gray-300 hover:bg-gray-600'}`}
             >
               Expired
             </button>
@@ -294,7 +308,7 @@ const AdminDashboard: React.FC = () => {
         </div>
 
         {filteredClients.length === 0 ? (
-          <div className="bg-gray-800 rounded-xl p-8 text-center shadow-lg">
+          <div className="bg-gray-800 rounded-xl p-6 text-center shadow-lg">
             <div className="max-w-md mx-auto">
               <Mail className="h-12 w-12 text-gray-500 mx-auto mb-4" />
               <h3 className="text-xl font-medium text-white mb-2">
@@ -313,120 +327,174 @@ const AdminDashboard: React.FC = () => {
             </div>
           </div>
         ) : (
-          <div className="bg-gray-800 rounded-xl shadow-lg overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-700">
-                <thead className="bg-gray-700">
-                  <tr>
-                    <th 
-                      onClick={() => handleSort('name')}
-                      className="py-3 px-4 text-left text-sm font-medium text-gray-300 cursor-pointer hover:bg-gray-600 transition-colors"
-                    >
-                      <div className="flex items-center">
-                        Member
-                        {getSortIcon('name')}
+          <>
+            {/* Mobile Card View */}
+            <div className="md:hidden space-y-3">
+              {filteredClients.map((client) => {
+                const isExpired = client.expiryDate ? new Date(client.expiryDate) < new Date() : false;
+                
+                return (
+                  <div key={client.email} className="bg-gray-700/50 rounded-lg p-4">
+                    <div className="flex justify-between items-start">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-red-600/20 p-2 rounded-full">
+                          <User className="h-5 w-5 text-red-400" />
+                        </div>
+                        <div>
+                          <p className="font-medium">{client.name}</p>
+                          <p className="text-sm text-gray-400">{client.email}</p>
+                        </div>
                       </div>
-                    </th>
-                    <th 
-                      onClick={() => handleSort('email')}
-                      className="py-3 px-4 text-left text-sm font-medium text-gray-300 cursor-pointer hover:bg-gray-600 transition-colors"
-                    >
-                      <div className="flex items-center">
-                        Contact
-                        {getSortIcon('email')}
+                      <div className={`text-xs px-2 py-1 rounded-full ${
+                        isExpired 
+                          ? 'bg-yellow-600/20 text-yellow-400' 
+                          : 'bg-green-600/20 text-green-400'
+                      }`}>
+                        {isExpired ? 'Expired' : 'Active'}
                       </div>
-                    </th>
-                    <th 
-                      onClick={() => handleSort('planName')}
-                      className="py-3 px-4 text-left text-sm font-medium text-gray-300 cursor-pointer hover:bg-gray-600 transition-colors"
-                    >
-                      <div className="flex items-center">
-                        Plan
-                        {getSortIcon('planName')}
-                      </div>
-                    </th>
-                    <th 
-                      onClick={() => handleSort('expiryDate')}
-                      className="py-3 px-4 text-left text-sm font-medium text-gray-300 cursor-pointer hover:bg-gray-600 transition-colors"
-                    >
-                      <div className="flex items-center">
-                        Status
-                        {getSortIcon('expiryDate')}
-                      </div>
-                    </th>
-                    <th className="py-3 px-4 text-left text-sm font-medium text-gray-300">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-700">
-                  {filteredClients.map((client) => {
-                    const isExpired = client.expiryDate ? new Date(client.expiryDate) < new Date() : false;
+                    </div>
                     
-                    return (
-                      <tr key={client.email} className="hover:bg-gray-700/50 transition-colors">
-                        <td className="py-4 px-4">
-                          <div className="flex items-center gap-3">
-                            <div className="bg-red-600/20 p-2 rounded-full">
-                              <User className="h-5 w-5 text-red-400" />
-                            </div>
-                            <div>
-                              <p className="font-medium">{client.name}</p>
-                              <p className="text-sm text-gray-400">
-                                ID: {client.id ? client.id.substring(0, 8) : 'N/A'}
-                              </p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-4 px-4">
-                          <p className="text-gray-300">{client.email}</p>
-                          <p className="text-sm text-gray-400">{client.phoneNumber || 'N/A'}</p>
-                        </td>
-                        <td className="py-4 px-4">
-                          <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                            client.planName 
-                              ? 'bg-red-600/20 text-red-400' 
-                              : 'bg-gray-700/50 text-gray-400'
-                          }`}>
-                            {client.planName || 'No Plan'}
-                          </div>
-                        </td>
-                        <td className="py-4 px-4">
-                          <div className="flex flex-col">
-                            <div className={`text-xs px-2 py-1 rounded-full w-fit mb-1 ${
-                              isExpired 
-                                ? 'bg-yellow-600/20 text-yellow-400' 
-                                : 'bg-green-600/20 text-green-400'
-                            }`}>
-                              {isExpired ? 'Expired' : 'Active'}
-                            </div>
-                            <div className="text-sm text-gray-400">
-                              {formatDate(client.expiryDate)}
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-4 px-4">
-                          <button
-                            onClick={() => openPlanModal(client)}
-                            className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 transition-colors"
-                          >
-                            <PlusCircle className="h-4 w-4" />
-                            {client.planName ? 'Modify Plan' : 'Assign Plan'}
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                    <div className="grid grid-cols-2 gap-3 mt-4">
+                      <div>
+                        <p className="text-xs text-gray-400">Plan</p>
+                        <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${
+                          client.planName 
+                            ? 'bg-red-600/20 text-red-400' 
+                            : 'bg-gray-600/50 text-gray-400'
+                        }`}>
+                          {client.planName || 'No Plan'}
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-400">Expires</p>
+                        <p className="text-sm">{formatDate(client.expiryDate)}</p>
+                      </div>
+                    </div>
+                    
+                    <button
+                      onClick={() => openPlanModal(client)}
+                      className="mt-4 w-full bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg text-sm flex items-center justify-center gap-2 transition-colors"
+                    >
+                      <PlusCircle className="h-4 w-4" />
+                      {client.planName ? 'Modify Plan' : 'Assign Plan'}
+                    </button>
+                  </div>
+                );
+              })}
             </div>
-          </div>
+            
+            {/* Desktop Table View */}
+            <div className="hidden md:block bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-700">
+                  <thead className="bg-gray-700">
+                    <tr>
+                      <th 
+                        onClick={() => handleSort('name')}
+                        className="py-3 px-4 text-left text-sm font-medium text-gray-300 cursor-pointer hover:bg-gray-600 transition-colors"
+                      >
+                        <div className="flex items-center">
+                          Member
+                          {getSortIcon('name')}
+                        </div>
+                      </th>
+                      <th 
+                        onClick={() => handleSort('email')}
+                        className="py-3 px-4 text-left text-sm font-medium text-gray-300 cursor-pointer hover:bg-gray-600 transition-colors"
+                      >
+                        <div className="flex items-center">
+                          Contact
+                          {getSortIcon('email')}
+                        </div>
+                      </th>
+                      <th 
+                        onClick={() => handleSort('planName')}
+                        className="py-3 px-4 text-left text-sm font-medium text-gray-300 cursor-pointer hover:bg-gray-600 transition-colors"
+                      >
+                        <div className="flex items-center">
+                          Plan
+                          {getSortIcon('planName')}
+                        </div>
+                      </th>
+                      <th 
+                        onClick={() => handleSort('expiryDate')}
+                        className="py-3 px-4 text-left text-sm font-medium text-gray-300 cursor-pointer hover:bg-gray-600 transition-colors"
+                      >
+                        <div className="flex items-center">
+                          Status
+                          {getSortIcon('expiryDate')}
+                        </div>
+                      </th>
+                      <th className="py-3 px-4 text-left text-sm font-medium text-gray-300">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-700">
+                    {filteredClients.map((client) => {
+                      const isExpired = client.expiryDate ? new Date(client.expiryDate) < new Date() : false;
+                      
+                      return (
+                        <tr key={client.email} className="hover:bg-gray-700/50 transition-colors">
+                          <td className="py-4 px-4">
+                            <div className="flex items-center gap-3">
+                              <div className="bg-red-600/20 p-2 rounded-full">
+                                <User className="h-5 w-5 text-red-400" />
+                              </div>
+                              <div>
+                                <p className="font-medium">{client.name}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-4 px-4">
+                            <p className="text-gray-300">{client.email}</p>
+                          </td>
+                          <td className="py-4 px-4">
+                            <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                              client.planName 
+                                ? 'bg-red-600/20 text-red-400' 
+                                : 'bg-gray-700/50 text-gray-400'
+                            }`}>
+                              {client.planName || 'No Plan'}
+                            </div>
+                          </td>
+                          <td className="py-4 px-4">
+                            <div className="flex flex-col">
+                              <div className={`text-xs px-2 py-1 rounded-full w-fit mb-1 ${
+                                isExpired 
+                                  ? 'bg-yellow-600/20 text-yellow-400' 
+                                  : 'bg-green-600/20 text-green-400'
+                              }`}>
+                                {isExpired ? 'Expired' : 'Active'}
+                              </div>
+                              <div className="text-sm text-gray-400">
+                                {formatDate(client.expiryDate)}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-4 px-4">
+                            <button
+                              onClick={() => openPlanModal(client)}
+                              className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 transition-colors"
+                            >
+                              <PlusCircle className="h-4 w-4" />
+                              {client.planName ? 'Modify Plan' : 'Assign Plan'}
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </>
         )}
 
         {/* Plan Assignment Modal */}
         {showModal && selectedClient && (
-          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-            <div className="bg-gray-800 rounded-xl p-6 w-full max-w-md animate-fade-in">
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-3">
+            <div className="bg-gray-800 rounded-xl p-4 w-full max-w-md max-h-[90vh] overflow-y-auto">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold flex items-center gap-2">
                   <Calendar className="text-red-600" />
@@ -434,7 +502,7 @@ const AdminDashboard: React.FC = () => {
                 </h2>
                 <button 
                   onClick={() => setShowModal(false)}
-                  className="text-gray-400 hover:text-white"
+                  className="text-gray-400 hover:text-white text-2xl"
                 >
                   &times;
                 </button>
@@ -477,7 +545,7 @@ const AdminDashboard: React.FC = () => {
                 </div>
               </div>
               
-              <div className="flex justify-end gap-3 mt-6">
+              <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6">
                 <button
                   onClick={() => setShowModal(false)}
                   className="px-4 py-2 rounded-lg border border-gray-600 text-gray-300 hover:bg-gray-700 transition-colors"
@@ -486,7 +554,7 @@ const AdminDashboard: React.FC = () => {
                 </button>
                 <button
                   onClick={updatePlan}
-                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2"
                 >
                   <PlusCircle className="h-4 w-4" />
                   Confirm Plan
@@ -496,6 +564,7 @@ const AdminDashboard: React.FC = () => {
           </div>
         )}
       </div>
+      <Footer/>
     </div>
   );
 };
